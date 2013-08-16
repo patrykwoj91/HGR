@@ -21,6 +21,8 @@ Thumbs.db
 [Dd]ebug*/
 *.lib
 *.sbr
+*.ipch
+*.sln
 obj/
 [Rr]elease*/
 _ReSharper*/
@@ -29,6 +31,6 @@ _ReSharper*/
 $tf*/
 HGR.opensdf
 HGR.sdf
-HGR.sln
-ipch/hgr-62c3c5e/hgr-3b45508d.ipch
-*.ipch
+
+
+
