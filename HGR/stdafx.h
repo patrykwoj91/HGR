@@ -6,11 +6,14 @@
 #pragma once
 
 #include "targetver.h"
-
-#include <stdio.h>
-#include <tchar.h>
-
+#include <iostream>
+#include <sstream>
+#include <iomanip>
+#include "stdio.h"
 // TODO: reference additional headers your program requires here
-#include <cv.h>
-#include <highgui.h>
+
+#include "cv.h";
+#include <opencv2/highgui/highgui.hpp>
+#include <opencv2/imgproc/imgproc.hpp>
+
 
