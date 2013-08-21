@@ -1,7 +1,5 @@
-#ifndef MAINAPP_H
-#define MAINAPP_H
-
 #include "stdafx.h"
+#include "HSV_Converter.h"
 
 using namespace cv;
 
@@ -13,6 +11,7 @@ private:
 	string win_name; //window name
 	Mat frame;
 	double dWidth,dHeight; //width and height of captured video
+	HSV_Converter HSV_converter;
 
 private:
 	mainApp() {}
@@ -34,5 +33,3 @@ public:
 	}
 	void run();
 };
-
-#endif

@@ -1,5 +1,4 @@
-#ifndef UTILS_H
-#define UTILS_H
+#pragma once
 
 #include "stdafx.h"
 
@@ -18,5 +17,3 @@ static string toString(int value){
 	sstr << value;
 	return sstr.str();
 }
-
-#endif

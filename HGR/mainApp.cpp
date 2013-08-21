@@ -24,8 +24,6 @@ void mainApp::run() {
 			break;
 		}
 
-		imshow(win_name, frame); //show the frame in "MyVideo" window
-
 		update();
 		draw();
 
@@ -54,16 +52,21 @@ int mainApp::setup()
 
 	win_name = "HGR";
 	namedWindow(win_name, CV_WINDOW_AUTOSIZE);
+
+	HSV_converter = HSV_Converter();
+	namedWindow(win_name+"_HSV", CV_WINDOW_AUTOSIZE);
 	return 0;
 }
 
 //--------------------------------------------------------------
 void mainApp::update()
 {
-
+	HSV_converter.Convert(frame);
 }
 //--------------------------------------------------------------
 void mainApp::draw() {
-
+	imshow(win_name,frame);
+	imshow(win_name+"_HSV", HSV_converter.HSV_frame); //show the frame in "MyVideo" window
+	
 }
 //--------------------------------------------------------------
