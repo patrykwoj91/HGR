@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "HSV_Converter.h"
+#include "skin_detection.h"
 
 using namespace cv;
 
@@ -11,7 +11,7 @@ private:
 	string win_name; //window name
 	Mat frame;
 	double dWidth,dHeight; //width and height of captured video
-	HSV_Converter HSV_converter;
+	skin_detection skin_detector;
 
 private:
 	mainApp() {}

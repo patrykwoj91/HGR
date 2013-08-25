@@ -53,7 +53,7 @@ int mainApp::setup()
 	win_name = "HGR";
 	namedWindow(win_name, CV_WINDOW_AUTOSIZE);
 
-	HSV_converter = HSV_Converter();
+	skin_detector = skin_detection();
 	namedWindow(win_name+"_HSV", CV_WINDOW_AUTOSIZE);
 	return 0;
 }
@@ -61,12 +61,12 @@ int mainApp::setup()
 //--------------------------------------------------------------
 void mainApp::update()
 {
-	HSV_converter.Convert(frame);
+	skin_detector.toHSV(frame);
 }
 //--------------------------------------------------------------
 void mainApp::draw() {
 	imshow(win_name,frame);
-	imshow(win_name+"_HSV", HSV_converter.HSV_frame); //show the frame in "MyVideo" window
-	
+	imshow(win_name+"_HSV", skin_detector.get_bootstrap()); //show the frame in "MyVideo" window
+
 }
 //--------------------------------------------------------------

@@ -30,7 +30,7 @@
     <ClInclude Include="utils.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="HSV_Converter.h">
+    <ClInclude Include="skin_detection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -44,7 +44,7 @@
     <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="HSV_Converter.cpp">
+    <ClCompile Include="skin_detection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
