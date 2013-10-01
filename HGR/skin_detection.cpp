@@ -25,7 +25,6 @@ Mat skin_detection::get_bootstrap()
 	Mat HSV_frame;
 	this->HSV_frame.copyTo(HSV_frame);
 	//Normalize RGB 
-
 	nRGB_frame = NormalizeRGB(this->frame);
 
 	//take the pixels that are inside the ranges in both colorspaces to create masks

@@ -54,7 +54,7 @@ int mainApp::setup()
 	namedWindow(win_name, CV_WINDOW_AUTOSIZE);
 
 	skin_detector = skin_detection();
-	namedWindow(win_name+"_HSV", CV_WINDOW_AUTOSIZE);
+	namedWindow(win_name+"_Mask", CV_WINDOW_AUTOSIZE);
 	return 0;
 }
 
@@ -66,7 +66,7 @@ void mainApp::update()
 //--------------------------------------------------------------
 void mainApp::draw() {
 	imshow(win_name,frame);
-	imshow(win_name+"_HSV", skin_detector.get_bootstrap()); //show the frame in "MyVideo" window
+	imshow(win_name+"_Mask", skin_detector.get_bootstrap()); //show the frame in "MyVideo" window
 
 }
 //--------------------------------------------------------------
