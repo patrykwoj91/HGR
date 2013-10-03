@@ -18,6 +18,14 @@ void mainApp::run() {
 
 		bool bSuccess = videoCapture.read(raw_frame); // read a new frame from video
 
+		//KOD DO TESTOWANIA NA OBRAZKU
+		/*raw_frame = imread("rgb.jpg", CV_LOAD_IMAGE_COLOR); 
+		if(! raw_frame.data )                           
+		{
+			cout <<  "Could not open or find the image" << std::endl ;
+			break;
+		}*/
+
 		if (!bSuccess) //if not success, break loop
 		{
 			std::cout << "Cannot read a frame from video file" << std::endl;
@@ -63,7 +71,7 @@ void mainApp::update()
 {	
 	skin_detector.set_frame(raw_frame);
 	skin_detector.get_bootstrap();
-	skin_detector.calc_hist();
+	//skin_detector.calc_hist();
 }
 //--------------------------------------------------------------
 void mainApp::draw() {
