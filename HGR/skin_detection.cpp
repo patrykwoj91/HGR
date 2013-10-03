@@ -11,21 +11,21 @@ skin_detection::~skin_detection(void)
 {
 }
 
-void skin_detection::toHSV(Mat frame)
+Mat skin_detection::toHSV(Mat frame)
 {
-	frame.copyTo(this->frame); // kopiuj klatke
-	cvtColor(this->frame,HSV_frame,COLOR_BGR2HSV); //konwersja przestrzeni barwnej
-	split(HSV_frame, HSV_split); // rozdziel na kanaly 
+	Mat HSV_frame;
+	cvtColor(frame,HSV_frame,COLOR_BGR2HSV); //konwersja przestrzeni barwnej
+	split(HSV_frame, HSV_split); // rozdziel na kanaly
+	return HSV_frame;
 }
 
 Mat skin_detection::get_bootstrap()
 {
 	Mat bootstrap;
 	//get HSV
-	Mat HSV_frame;
-	this->HSV_frame.copyTo(HSV_frame);
+	this->HSV_frame = toHSV(this->frame);
 	//Normalize RGB 
-	nRGB_frame = NormalizeRGB(this->frame);
+	this->nRGB_frame = NormalizeRGB(this->frame);
 
 	//take the pixels that are inside the ranges in both colorspaces to create masks
 	Mat HSV_mask, nRGB_mask;
@@ -34,23 +34,47 @@ Mat skin_detection::get_bootstrap()
 
 	//combine the masks
 	bootstrap = HSV_mask & nRGB_mask;
+	this->mask = bootstrap; //chwilowo do testow, potem polaczyc to w 1 funkcji detect();
 	return bootstrap;
 }
 
-void skin_detection::calc_histogram(Mat mask) 
+void skin_detection::calc_hist() //liczy histogramy i normalizuje je dzielac przez liczbe pixeli skin i non skin tworzac funkcje gestosci prawdopodobienstwa
 {
+	   // hist_bins = Scalar(50,50); - histSize
+       // low_range = Scalar(0.2,0.3); - urange urange
+       // high_range = Scalar(0.4,0.5);  vrange vrange
+       // range_dist[0] = high_range[0] - low_range[0]; ranges
+       // range_dist[1] = high_range[1] - low_range[1];
+
+
 	MatND skin_Histogram;
 	MatND non_skin_Histogram;
+	/// Ustaw dla ilu (rozmiar tablicy) i z ktorych kanalow ma sie skladac histogram
+	int channels[] = {1, 2};
+	/// Ustaw liczbe koszykow dla kazdego kanalu
+	int histSize[] = { 250, 250 };
+	/// Ustaw zakresy dla obu kanalow takie same
+	float uranges[] = {0, 1 };
+	float vranges[] = { 0, 1 };
+	const float *ranges[] = { uranges, vranges };
+	
+	bool uniform = true; //unifikuj rozmiar binu w histogramie 
+	bool accumulate = false; //czysc za kazdym razem
+	
+	//skin_Histogram = calc_2D_hist(nRGB_frame,mask,channels,Scalar(250, 250),Scalar(0, 0),Scalar(1, 1));	
+	//non_skin_Histogram = calc_2D_hist(nRGB_frame,~mask,channels,Scalar(250, 250),Scalar(0, 0),Scalar(1, 1));	
 
-	skin_Histogram = calc_rg_hist(nRGB_frame,mask);
-	non_skin_Histogram = calc_rg_hist(nRGB_frame,~mask);
+	//liczy 2 wymiarowe histogramy dla kanalow 1 i 2
+	calcHist(&nRGB_frame,1,channels,mask,skin_Histogram,2,histSize,ranges,uniform,accumulate);
+	calcHist(&nRGB_frame,1,channels,~mask,non_skin_Histogram,2,histSize,ranges,uniform,accumulate);
 
-	//create a probabilty density function
-	float skin_pixels = countNonZero(mask), non_skin_pixels = countNonZero(~mask);
-	for (int ubin=0; ubin < 250; ubin++) {
-		for (int vbin = 0; vbin < 250; vbin++) {
-			if (skin_Histogram.at<float>(ubin,vbin) > 0) {
-				skin_Histogram.at<float>(ubin,vbin) /= skin_pixels;
+	float skin_pixels = countNonZero(mask); //zlicza wartosci niezerowe czyli pikseli ktore maja kolor skory
+	float non_skin_pixels = countNonZero(~mask); //tak samo jw. ale dla "odwroconej" maski
+
+	for (int ubin=0; ubin < histSize[1]; ubin++) { //ubin i vbin to koszyki w obrazku , dla zakresu wartosci pixela 0-250
+		for (int vbin = 0; vbin < histSize[2]; vbin++) {
+			if (skin_Histogram.at<float>(ubin,vbin) > 0) { 
+				skin_Histogram.at<float>(ubin,vbin) /= skin_pixels; //normalizacja w liczba pixeli skin i non skin
 			}
 			if (non_skin_Histogram.at<float>(ubin,vbin) > 0) {
 				non_skin_Histogram.at<float>(ubin,vbin) /= non_skin_pixels;
@@ -59,22 +83,3 @@ void skin_detection::calc_histogram(Mat mask)
 	}
 }
 
-MatND skin_detection::calc_rg_hist(const Mat& img, const Mat& mask, const Scalar& bins, const Scalar& low, const Scalar& high) 
-{
-	Scalar channels(1, 2);
-	return this->calc_2D_hist(img,mask,channels,bins,low,high);		
-}
-
-MatND skin_detection::calc_2D_hist(const Mat& img, const Mat& mask, Scalar wchannels, Scalar bins, Scalar low, Scalar high) 
-{
-	MatND hist;
-	int histSize[] = { bins[0], bins[1] };
-	float uranges[] = { low[0], high[0] };
-	float vranges[] = { low[1], high[1] };
-	const float *ranges[] = { uranges, vranges };
-	int channels[] = {wchannels[0], wchannels[1]};
-
-	calcHist( &img, 1, channels, mask, hist, 2, histSize, ranges, true, false );
-
-	return hist;
-}

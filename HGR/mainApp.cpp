@@ -16,7 +16,7 @@ void mainApp::run() {
 
 	while(1) { //main loop
 
-		bool bSuccess = videoCapture.read(frame); // read a new frame from video
+		bool bSuccess = videoCapture.read(raw_frame); // read a new frame from video
 
 		if (!bSuccess) //if not success, break loop
 		{
@@ -60,13 +60,15 @@ int mainApp::setup()
 
 //--------------------------------------------------------------
 void mainApp::update()
-{
-	skin_detector.toHSV(frame);
+{	
+	skin_detector.set_frame(raw_frame);
+	skin_detector.get_bootstrap();
+	skin_detector.calc_hist();
 }
 //--------------------------------------------------------------
 void mainApp::draw() {
-	imshow(win_name,frame);
-	imshow(win_name+"_Mask", skin_detector.get_bootstrap()); //show the frame in "MyVideo" window
+	imshow(win_name,raw_frame);
+	imshow(win_name+"_Mask", skin_detector.mask); //show the frame in "MyVideo" window
 
 }
 //--------------------------------------------------------------

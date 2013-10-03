@@ -9,7 +9,7 @@ class mainApp
 private: 
 	VideoCapture videoCapture;
 	string win_name; //window name
-	Mat frame;
+	Mat raw_frame;
 	double dWidth,dHeight; //width and height of captured video
 	skin_detection skin_detector;
 
@@ -23,7 +23,7 @@ private:
 	void draw(); // Drawing functions:
 
 public:
-	int a;
+	Mat final_frame;
 
 public:
 	static mainApp& getInstance()
