@@ -4,6 +4,12 @@
 
 skin_detection::skin_detection()
 {
+		theta_thresh = 8.0;
+	    hist_bins = Scalar(50,50); 
+        low_range = Scalar(0.2,0.3); 
+        high_range = Scalar(0.4,0.5);
+        range_dist[0] = high_range[0] - low_range[0]; 
+        range_dist[1] = high_range[1] - low_range[1];
 }
 
 
@@ -40,23 +46,14 @@ Mat skin_detection::get_bootstrap()
 
 void skin_detection::calc_hist() //liczy histogramy i normalizuje je dzielac przez liczbe pixeli skin i non skin tworzac funkcje gestosci prawdopodobienstwa
 {
-	   // hist_bins = Scalar(50,50); - histSize
-       // low_range = Scalar(0.2,0.3); - urange urange
-       // high_range = Scalar(0.4,0.5);  vrange vrange
-       // range_dist[0] = high_range[0] - low_range[0]; ranges
-       // range_dist[1] = high_range[1] - low_range[1];
-
-
-	MatND skin_Histogram;
-	MatND non_skin_Histogram;
 	/// Ustaw dla ilu (rozmiar tablicy) i z ktorych kanalow ma sie skladac histogram
 	int channels[] = {1, 2};
 	/// Ustaw liczbe koszykow dla kazdego kanalu
-	int histSize[] = { 250, 250 };
+	int histSize[] = { hist_bins[0], hist_bins[1] };
 	/// Ustaw zakresy dla obu kanalow takie same
-	float uranges[] = {0, 1 };
-	float vranges[] = { 0, 1 };
-	const float *ranges[] = { uranges, vranges };
+	float uranges[] = { low_range[0], high_range[0] };
+	float vranges[] = { low_range[1], high_range[1] };
+	const float* ranges[] = { uranges, vranges };
 	
 	bool uniform = true; //unifikuj rozmiar binu w histogramie 
 	bool accumulate = false; //czysc za kazdym razem
@@ -81,5 +78,40 @@ void skin_detection::calc_hist() //liczy histogramy i normalizuje je dzielac prz
 			}
 		}
 	}
+
 }
 
+Mat skin_detection::train() {
+
+		Mat_<Vec3f> nrgb = nRGB_frame.reshape(3, this->frame.rows*this->frame.cols);
+		Mat_<uchar> result_mask(nrgb.size());
+		
+		for (int i=0; i<nrgb.rows; i++) {
+            if (nrgb.at<Vec3f>(i)[1] < 0 || nrgb(i)[1] > 0 ||
+                nrgb(i)[2] < 1 || nrgb(i)[2] > 1)
+            {
+                result_mask(i) = 0;
+                continue;
+            }
+			int gbin = cvRound((nrgb(i)[1] - 0)/range_dist[0] * hist_bins[0]);
+			int rbin = cvRound((nrgb(i)[2] - low_range[1])/range_dist[1] * hist_bins[1]);
+			float skin_hist_val = skin_Histogram.at<float>(gbin,rbin);
+			if (skin_hist_val > 0) {
+				float non_skin_hist_val = non_skin_Histogram.at<float>(gbin,rbin);
+				if (non_skin_hist_val > 0) {
+					if((skin_hist_val / non_skin_hist_val) > theta_thresh)
+						result_mask(i) = 255;
+					else 
+						result_mask(i) = 0;
+				} else {
+					result_mask(i) = 0;
+				}
+			} else {
+				result_mask(i) = 0;
+			}
+		}
+		
+		return result_mask.reshape(1, this->frame.rows);
+	}
+
+//porownac histogramy policzone obiema metodami wlasna i gotowa
