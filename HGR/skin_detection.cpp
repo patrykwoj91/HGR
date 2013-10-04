@@ -58,15 +58,15 @@ void skin_detection::calc_hist() //liczy histogramy i normalizuje je dzielac prz
 	bool uniform = true; //unifikuj rozmiar binu w histogramie 
 	bool accumulate = false; //czysc za kazdym razem
 	
-	//skin_Histogram = calc_2D_hist(nRGB_frame,mask,channels,Scalar(250, 250),Scalar(0, 0),Scalar(1, 1));	
-	//non_skin_Histogram = calc_2D_hist(nRGB_frame,~mask,channels,Scalar(250, 250),Scalar(0, 0),Scalar(1, 1));	
+	skin_Histogram = calc_rg_hist(nRGB_frame,mask,hist_bins,low_range,high_range);
+	non_skin_Histogram = calc_rg_hist(nRGB_frame,~mask,hist_bins,low_range,high_range);
 
 	//liczy 2 wymiarowe histogramy dla kanalow 1 i 2
 	calcHist(&nRGB_frame,1,channels,mask,skin_Histogram,2,histSize,ranges,uniform,accumulate);
 	calcHist(&nRGB_frame,1,channels,~mask,non_skin_Histogram,2,histSize,ranges,uniform,accumulate);
 
 	float skin_pixels = countNonZero(mask); //zlicza wartosci niezerowe czyli pikseli ktore maja kolor skory
-	float non_skin_pixels = countNonZero(~mask); //tak samo jw. ale dla "odwroconej" maski
+	float non_skin_pixels = countNonZero(~mask); //tak samo jw. ale dla "odwroconej" maski 
 
 	for (int ubin=0; ubin < histSize[1]; ubin++) { //ubin i vbin to koszyki w obrazku , dla zakresu wartosci pixela 0-250
 		for (int vbin = 0; vbin < histSize[2]; vbin++) {

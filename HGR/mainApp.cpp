@@ -70,15 +70,17 @@ int mainApp::setup()
 void mainApp::update()
 {	
 	skin_detector.set_frame(raw_frame);
+	medianBlur(skin_detector.mask, skin_detector.mask, 3);
 	skin_detector.get_bootstrap();
 	skin_detector.calc_hist();
-	final_frame=skin_detector.train();
-	
+	//final_frame=skin_detector.train();
+	skin_detector.predict(skin_detector.mask);
+
 }
 //--------------------------------------------------------------
 void mainApp::draw() {
 	imshow(win_name,raw_frame);
 	imshow(win_name+"_Mask", skin_detector.mask); //show the frame in "MyVideo" window
-	imshow(win_name+"_Final", final_frame);
+	//imshow(win_name+"_Final", final_frame);
 }
 //--------------------------------------------------------------
