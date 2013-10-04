@@ -60,27 +60,18 @@ int mainApp::setup()
 
 	win_name = "HGR";
 	namedWindow(win_name, CV_WINDOW_AUTOSIZE);
-
 	skin_detector = skin_detection();
-	namedWindow(win_name+"_Mask", CV_WINDOW_AUTOSIZE);
 	return 0;
 }
 
 //--------------------------------------------------------------
 void mainApp::update()
 {	
-	skin_detector.set_frame(raw_frame);
-	medianBlur(skin_detector.mask, skin_detector.mask, 3);
-	skin_detector.get_bootstrap();
-	skin_detector.calc_hist();
-	//final_frame=skin_detector.train();
-	skin_detector.predict(skin_detector.mask);
-
+	skin_frame = skin_detector.detect_skin(raw_frame);
 }
 //--------------------------------------------------------------
 void mainApp::draw() {
 	imshow(win_name,raw_frame);
-	imshow(win_name+"_Mask", skin_detector.mask); //show the frame in "MyVideo" window
-	//imshow(win_name+"_Final", final_frame);
+	imshow("Masked Skin", skin_frame);
 }
 //--------------------------------------------------------------

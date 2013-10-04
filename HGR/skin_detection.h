@@ -24,19 +24,19 @@ private:
     Scalar high_range;
     Scalar range_dist;
 public:
+	Mat detect_skin(Mat raw_frame);
+	skin_detection();
+	~skin_detection(void);
+private:
 	Mat toHSV(Mat frame);
 	Mat get_bootstrap();
 	void calc_hist();
 	Mat train();
-	skin_detection();
-	~skin_detection(void);
-	void set_frame(Mat frame) { frame.copyTo(this->frame);}
 
 	MatND calc_rg_hist(const Mat& img, const Mat& mask, const Scalar& bins = Scalar(250, 250), const Scalar& low = Scalar(0, 0), const Scalar& high = Scalar(1, 1)) {
 		Scalar channels(1, 2);
 		return this->calc_2D_hist(img,mask,channels,bins,low,high);		
 	}
-
 	MatND calc_2D_hist(const Mat& img, const Mat& mask, Scalar wchannels, Scalar bins, Scalar low, Scalar high) {
 		MatND hist;
 		int histSize[] = { bins[0], bins[1] };
