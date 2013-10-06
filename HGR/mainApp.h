@@ -1,5 +1,7 @@
 #include "stdafx.h"
 #include "skin_detection.h"
+#include "skin_detection2.h"
+#include "background_subtraction.h"
 
 using namespace cv;
 
@@ -7,11 +9,8 @@ using namespace cv;
 class mainApp
 {  
 private: 
-	VideoCapture videoCapture;
-	string win_name; //window name
-	double dWidth,dHeight; //width and height of captured video
-	skin_detection skin_detector;
-
+	CvCapture* capture;
+	
 private:
 	mainApp() {}
 	mainApp(const mainApp &);
@@ -22,9 +21,10 @@ private:
 	void draw(); // Drawing functions:
 
 public:
-	Mat raw_frame;
-	Mat skin_frame;
-	Mat final_frame;
+	IplImage *rawImage;
+	int numerKlatki;
+	background_subtraction back_subtractor;
+	skin_detection skin_detector;
 
 public:
 	static mainApp& getInstance()

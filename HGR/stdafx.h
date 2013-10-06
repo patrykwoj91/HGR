@@ -9,13 +9,16 @@
 #include <iostream>
 #include <sstream>
 #include <iomanip>
-#include "stdio.h"
+#include <stdio.h>
+#include <vector>
 // TODO: reference additional headers your program requires here
 
-#include "cv.h";
+#include "cv.h"
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-
-#include "utils.h";
+#include <opencv2/opencv.hpp>
+#include "cvaux.h"
+#include "cxmisc.h"
+#include "utils.h"
 
 

@@ -27,10 +27,10 @@
     <ClInclude Include="mainApp.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="utils.h">
+    <ClInclude Include="skin_detection.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="skin_detection.h">
+    <ClInclude Include="background_subtraction.h">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
@@ -41,10 +41,13 @@
     <ClCompile Include="mainApp.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="main.cpp">
+    <ClCompile Include="skin_detection.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="skin_detection.cpp">
+    <ClCompile Include="background_subtraction.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="main.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

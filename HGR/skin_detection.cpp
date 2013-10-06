@@ -2,131 +2,144 @@
 #include "skin_detection.h"
 
 skin_detection::skin_detection()
-{
-		theta_thresh = 100.0;
-	    hist_bins = Scalar(50,50); 
-        low_range = Scalar(0.2,0.3); 
-        high_range = Scalar(0.4,0.5);
-        range_dist[0] = high_range[0] - low_range[0]; 
-        range_dist[1] = high_range[1] - low_range[1];
+{	
+	//zakresy dla masek
+	hsv_min = cvScalar(0, 0, 0, 0);				//Scalar(0,0.2*255.0,0.35*255.0)
+	hsv_max = cvScalar(50.0, 50, 0, 0);	//Scalar(50.0/2.0,0.68*255.0,1.0*255.0)
+	nrgb_min = cvScalar(0, 0.28, 0.36, 0);						//Scalar(0,0.28,0.36)
+	nrgb_max = cvScalar(1.0, 0.363, 0.465, 0);					//Scalar(1.0,0.363,0.465)
+
+	mw[0] = 114.8755;
+	mw[1] = 56.5551;
+	macierz[0] = 0.1792 * 1000;
+	macierz[1] = -0.1985 * 1000;
+	macierz[2] = -0.1985 * 1000;
+	macierz[3] = 2.8325 * 1000;
+
+	// przygotowujemy macierze
+	Cs = cvCreateMat(2, 2, CV_32FC1);
+	cvInitMatHeader(Cs, 2, 2, CV_32FC1, macierz);
+	CsInv = cvCreateMat(2, 2, CV_32FC1);
+	cvInvert(Cs, CsInv);
+	ms = cvCreateMat(1, 2, CV_32FC1);
+	cvInitMatHeader(ms, 1, 2, CV_32FC1, mw);
+
+	 X = cvCreateMat(1, 2, CV_32FC1);
+	 Xms = cvCreateMat(1, 2, CV_32FC1);
+	 XmsT = cvCreateMat(2, 1, CV_32FC1);
+	 XmsCsInv = cvCreateMat(1, 2, CV_32FC1);
+	 XmsCsInvXmsT = cvCreateMat(1, 1, CV_32FC1);
 }
 
 skin_detection::~skin_detection(void)
 {
 }
 
-Mat skin_detection::toHSV(Mat frame)
+IplImage* skin_detection::getNRGB(IplImage* rawImage)
 {
-	Mat HSV_frame;
-	cvtColor(frame,HSV_frame,COLOR_BGR2HSV); //konwersja przestrzeni barwnej
-	split(HSV_frame, HSV_split); // rozdziel na kanaly
-	return HSV_frame;
+	IplImage* redchannel = cvCreateImage(cvGetSize(rawImage), 8, 1);
+    IplImage* greenchannel = cvCreateImage(cvGetSize(rawImage), 8, 1);
+    IplImage* bluechannel = cvCreateImage(cvGetSize(rawImage), 8, 1);
+	
+	IplImage* redavg = cvCreateImage(cvGetSize(rawImage), 8, 1);
+    IplImage* greenavg = cvCreateImage(cvGetSize(rawImage), 8, 1);
+    IplImage* blueavg= cvCreateImage(cvGetSize(rawImage), 8, 1);
+    
+	IplImage* imgavg = cvCreateImage(cvGetSize(rawImage), 8, 3);
+
+	cvSplit(rawImage, bluechannel, greenchannel, redchannel, NULL);
+
+	for(int x=0; x < rawImage->width ;x++)
+    {
+		for(int y=0;y < rawImage->height ;y++)
+        {
+			int redValue = cvGetReal2D(redchannel, y, x);
+            int greenValue = cvGetReal2D(greenchannel, y, x);
+            int blueValue = cvGetReal2D(bluechannel, y, x);
+
+			 double sum = redValue+greenValue+blueValue;
+
+			cvSetReal2D(redavg, y, x, redValue/sum*255);
+            cvSetReal2D(greenavg, y, x, greenValue/sum*255);
+            cvSetReal2D(blueavg, y, x, blueValue/sum*255);
+        }
+    }
+
+	cvMerge(blueavg, greenavg, redavg, NULL, imgavg);
+
+	cvReleaseImage(&redchannel);
+    cvReleaseImage(&greenchannel);
+    cvReleaseImage(&bluechannel);
+    cvReleaseImage(&redavg);
+    cvReleaseImage(&greenavg);
+    cvReleaseImage(&blueavg);
+ 
+    return imgavg;
 }
 
-Mat skin_detection::get_bootstrap()
+void skin_detection::get_mask(IplImage *rawImage)
 {
-	Mat bootstrap;
-	//get HSV
-	this->HSV_frame = toHSV(this->frame);
-	//Normalize RGB 
-	this->nRGB_frame = NormalizeRGB(this->frame);
+	cvCvtColor(rawImage,hsvImage,COLOR_RGB2HSV); //konwersja do HSV
+	//nrgbImage = getNRGB(rawImage); //Normalize RGB 
 
-	//take the pixels that are inside the ranges in both colorspaces to create masks
-	Mat HSV_mask, nRGB_mask;
-	inRange(HSV_frame, Scalar(0,0.2*255.0,0.35*255.0), Scalar(50.0/2.0,0.68*255.0,1.0*255.0), HSV_mask); //wartosci przedzialu na podstawie rownania z Gomes & Moralez
-	inRange(nRGB_frame, Scalar(0,0.28,0.36), Scalar(1.0,0.363,0.465), nRGB_mask); //j.w
+	//cvInRangeS (hsvImage, hsv_min, hsv_max, hsvMask); 
+	//cvInRangeS (nrgbImage, nrgb_min, nrgb_max, nrgbMask); 
+
 
 	//combine the masks
-	bootstrap = HSV_mask & nRGB_mask;
-	return bootstrap;
+
 }
 
-void skin_detection::calc_hist() //liczy histogramy i normalizuje je dzielac przez liczbe pixeli skin i non skin tworzac funkcje gestosci prawdopodobienstwa
+void skin_detection::setup(IplImage * rawImage)
 {
-	/// Ustaw dla ilu (rozmiar tablicy) i z ktorych kanalow ma sie skladac histogram
-	int channels[] = {1, 2}; // H S 
-	/// Ustaw liczbe koszykow dla kazdego kanalu
-	int histSize[] = { hist_bins[0], hist_bins[1] };
+	hsvImage = cvCreateImage(cvGetSize(rawImage),8,3);
+	nrgbImage = cvCreateImage(cvGetSize(rawImage),8,3);
+	hsvMask = cvCreateImage(cvGetSize(rawImage),8,1);
+	nrgbMask = cvCreateImage(cvGetSize(rawImage),8,1);
 
-	float uranges[] = { low_range[0], high_range[0] };
-	float vranges[] = { low_range[1], high_range[1] };
-	const float* ranges[] = { uranges, vranges }; 	/// Ustaw zakresy dla obu kanalow 
-
-	bool uniform = true; //unifikuj rozmiar binu w histogramie 
-	bool accumulate = false; //czysc za kazdym razem
-	
-	skin_Histogram.setTo(0); 
-	non_skin_Histogram.setTo(0);
-
-	skin_Histogram = calc_rg_hist(nRGB_frame,mask,hist_bins,low_range,high_range);
-	non_skin_Histogram = calc_rg_hist(nRGB_frame,~mask,hist_bins,low_range,high_range);
-
-	//liczy 2 wymiarowe histogramy dla kanalow 1 i 2
-	//calcHist(&nRGB_frame,1,channels,mask,skin_Histogram,2,histSize,ranges,uniform,accumulate);
-	//calcHist(&nRGB_frame,1,channels,~mask,non_skin_Histogram,2,histSize,ranges,uniform,accumulate);
-
-	float skin_pixels = countNonZero(mask); //zlicza wartosci niezerowe czyli pikseli ktore maja kolor skory
-	float non_skin_pixels = countNonZero(~mask); //zlicza wszystkie wartosci ktore nie maja koloru skory
-
-	for (int ubin=0; ubin < hist_bins[0]; ubin++) { //ubin i vbin to koszyki histogramow
-		for (int vbin = 0; vbin < hist_bins[1]; vbin++) {
-			if (skin_Histogram.at<float>(ubin,vbin) > 0) { 
-				skin_Histogram.at<float>(ubin,vbin) /= skin_pixels; //normalizacja w liczba pixeli skin i non skin
-			}
-			if (non_skin_Histogram.at<float>(ubin,vbin) > 0) {
-				non_skin_Histogram.at<float>(ubin,vbin) /= non_skin_pixels;
-			}
-		}
-	}
+	// liczymy
+	height = hsvImage->height;
+	width = hsvImage->width;
+	step = hsvImage->widthStep;
+	channels = hsvImage->nChannels;
 }
 
-Mat skin_detection::train() {
+void skin_detection::detect_skin(IplImage *rawImage)
+{
+	get_mask(rawImage);
+	detection(hsvImage, 2, 40, mw, macierz);
+}
 
-		Mat_<Vec3f> nrgb = nRGB_frame.reshape(3, this->frame.rows*this->frame.cols);
-		Mat_<uchar> result_mask(nrgb.size());
-		
-		for (int i=0; i<nrgb.rows; i++) {
-            if (nrgb.at<Vec3f>(i)[1] < low_range[0] || nrgb(i)[1] > high_range[0] ||
-                nrgb(i)[2] < low_range[1] || nrgb(i)[2] > high_range[1]) //wartosci posrednie na pewno nie sa skora
-            {
-                result_mask(i) = 0;
-                continue;
-            }
+void skin_detection::detection(IplImage *obrazHSV, double progLambda, unsigned int progKanaluV, float *wektorMs, float *macierzKowariancji) {
+	if (this->maskImage) {
+		cvReleaseImage(&maskImage);
+	}
+	maskImage = cvCreateImage(cvSize(obrazHSV->width, obrazHSV->height), 8, 1);
 
-			int gbin = cvRound((nrgb(i)[1] - low_range[0])/range_dist[0] * hist_bins[0]); //wartosc histogramu dla danej skladowej bierzacego pixela?
-			int rbin = cvRound((nrgb(i)[2] - low_range[1])/range_dist[1] * hist_bins[1]);
+	uchar* data = (uchar *)obrazHSV->imageData;
+	int stepMask = maskImage->widthStep;
+	uchar* dataMask = (uchar *)maskImage->imageData;
 
-			float skin_hist_val = skin_Histogram.at<float>(gbin,rbin);
-
-		/*	if (skin_hist_val > 0) {
-				float non_skin_hist_val = non_skin_Histogram.at<float>(gbin,rbin);
-				if (non_skin_hist_val > 0) {
-
-					if((skin_hist_val / non_skin_hist_val) > theta_thresh)
-						result_mask(i) = 255;
-					else 
-						result_mask(i) = 0;
-				} else {
-					result_mask(i) = 0;
-				}
-			} else {
-				result_mask(i) = 0;
-			}*/
-		}
-		
-		return result_mask.reshape(1, this->frame.rows);
+	for (int i = 0; i < height; i++)
+		for (int j = 0; j < width; j++) {
+			cvmSet(X, 0, 0, (double)data[i*step+j*channels+0]);
+			cvmSet(X, 0, 1, (double)data[i*step+j*channels+1]);
+			cvSub(X, ms, Xms);
+			cvTranspose(Xms, XmsT);
+			cvMatMul(Xms, CsInv, XmsCsInv);
+			cvMatMul(XmsCsInv, XmsT, XmsCsInvXmsT);
+			// sprawdzamy przynaleznosc
+			double lambda = cvmGet(XmsCsInvXmsT, 0, 0);
+			dataMask[i*stepMask+j] = ((data[i*step+j*channels+2] >= progKanaluV) && (lambda < progLambda)) ? 255 : 0;
 	}
 
-Mat skin_detection::detect_skin(Mat raw_frame)
-{
-	 raw_frame.copyTo(this->frame);
-	 //medianBlur(mask, mask, 3);
-	 mask = get_bootstrap(); //wstepna maska 
-	 calc_hist(); //liczy histogramy 
-	 train();
-	// predict(mask); //trenuje
-	 imshow("bootstrap",mask);
-	 return mask;
+	//cvReleaseMat(&XmsCsInvXmsT);
+	//cvReleaseMat(&XmsCsInv);
+	//cvReleaseMat(&XmsT);
+	//cvReleaseMat(&Xms);
+	//cvReleaseMat(&X);
+	// zwalniamy macierze
+	//cvReleaseMat(&ms);
+	//cvReleaseMat(&CsInv);
+	//cvReleaseMat(&Cs);
 }
-
-//porownac histogramy policzone obiema metodami wlasna i gotowa

@@ -6,10 +6,10 @@
 using namespace std;
 using namespace cv;
 
+
 int main(int, char**)
 {
 	mainApp::getInstance().run();
 	system("pause");
 	return 0;
 }
-
