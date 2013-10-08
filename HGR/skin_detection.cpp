@@ -4,10 +4,10 @@
 skin_detection::skin_detection()
 {	
 	//zakresy dla masek
-	hsv_min = cvScalar(0, 0, 0, 0);				//Scalar(0,0.2*255.0,0.35*255.0)
-	hsv_max = cvScalar(50.0, 50, 0, 0);	//Scalar(50.0/2.0,0.68*255.0,1.0*255.0)
-	nrgb_min = cvScalar(0, 0.28, 0.36, 0);						//Scalar(0,0.28,0.36)
-	nrgb_max = cvScalar(1.0, 0.363, 0.465, 0);					//Scalar(1.0,0.363,0.465)
+	hsv_min = /*cvScalar(0, 0, 0, 0);*/								cvScalar(0,0.2*255.0,0.35*255.0);
+	hsv_max = /*cvScalar(50.0, 50, 0, 0);*/							cvScalar(50.0/2.0,0.68*255.0,1.0*255.0);
+	nrgb_min = /*cvScalar(0, 0.28, 0.36, 0);*/						cvScalar(0,0.28,0.36);
+	nrgb_max = /*cvScalar(1.0, 0.363, 0.465, 0);*/					cvScalar(1.0,0.363,0.465);
 
 	mw[0] = 114.8755;
 	mw[1] = 56.5551;
@@ -79,15 +79,15 @@ IplImage* skin_detection::getNRGB(IplImage* rawImage)
 
 void skin_detection::get_mask(IplImage *rawImage)
 {
-	cvCvtColor(rawImage,hsvImage,COLOR_RGB2HSV); //konwersja do HSV
-	//nrgbImage = getNRGB(rawImage); //Normalize RGB 
+	cvCvtColor(rawImage,hsvImage,COLOR_BGR2HSV); //konwersja do HSV
+	nrgbImage = getNRGB(rawImage); //Normalize RGB 
 
-	//cvInRangeS (hsvImage, hsv_min, hsv_max, hsvMask); 
-	//cvInRangeS (nrgbImage, nrgb_min, nrgb_max, nrgbMask); 
+	cvInRangeS (hsvImage, hsv_min, hsv_max, hsvMask); 
+	cvInRangeS (nrgbImage, nrgb_min, nrgb_max, nrgbMask); 
 
 
-	//combine the masks
-
+	//combine the masks should be here
+	//cvAnd(hsvMask,nrgbMask,maskImage);
 }
 
 void skin_detection::setup(IplImage * rawImage)
@@ -96,7 +96,7 @@ void skin_detection::setup(IplImage * rawImage)
 	nrgbImage = cvCreateImage(cvGetSize(rawImage),8,3);
 	hsvMask = cvCreateImage(cvGetSize(rawImage),8,1);
 	nrgbMask = cvCreateImage(cvGetSize(rawImage),8,1);
-
+	maskImage = cvCreateImage(cvGetSize(rawImage), 8, 1);
 	// liczymy
 	height = hsvImage->height;
 	width = hsvImage->width;
@@ -104,13 +104,7 @@ void skin_detection::setup(IplImage * rawImage)
 	channels = hsvImage->nChannels;
 }
 
-void skin_detection::detect_skin(IplImage *rawImage)
-{
-	get_mask(rawImage);
-	detection(hsvImage, 2, 40, mw, macierz);
-}
-
-void skin_detection::detection(IplImage *obrazHSV, double progLambda, unsigned int progKanaluV, float *wektorMs, float *macierzKowariancji) {
+void skin_detection::detection(IplImage *obrazHSV, double progLambda, unsigned int progKanaluV) {
 	if (this->maskImage) {
 		cvReleaseImage(&maskImage);
 	}
@@ -132,14 +126,11 @@ void skin_detection::detection(IplImage *obrazHSV, double progLambda, unsigned i
 			double lambda = cvmGet(XmsCsInvXmsT, 0, 0);
 			dataMask[i*stepMask+j] = ((data[i*step+j*channels+2] >= progKanaluV) && (lambda < progLambda)) ? 255 : 0;
 	}
+}
 
-	//cvReleaseMat(&XmsCsInvXmsT);
-	//cvReleaseMat(&XmsCsInv);
-	//cvReleaseMat(&XmsT);
-	//cvReleaseMat(&Xms);
-	//cvReleaseMat(&X);
-	// zwalniamy macierze
-	//cvReleaseMat(&ms);
-	//cvReleaseMat(&CsInv);
-	//cvReleaseMat(&Cs);
+IplImage* skin_detection::mask_skin(IplImage *rawImage)
+{
+	get_mask(rawImage);
+	//detection(hsvImage, 2, 40);
+	return maskImage;
 }

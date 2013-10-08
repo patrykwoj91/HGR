@@ -26,7 +26,7 @@ background_subtraction::~background_subtraction(void)
 {
 }
 
-void background_subtraction::subtract_background(IplImage *rawImage, int nframes)
+IplImage* background_subtraction::subtract_background(IplImage *rawImage, int nframes)
 {
 	cvCvtColor( rawImage, yuvImage, CV_BGR2YCrCb );//YUV For codebook method
             
@@ -44,9 +44,10 @@ void background_subtraction::subtract_background(IplImage *rawImage, int nframes
                 cvBGCodeBookDiff( model, yuvImage, ImaskCodeBook );
 
                 // This part just to visualize bounding boxes and centers if desired
-                cvCopy(ImaskCodeBook,ImaskCodeBookCC);
-                cvSegmentFGMask( ImaskCodeBookCC );
+               // cvCopy(ImaskCodeBook,ImaskCodeBookCC);
+               // cvSegmentFGMask( ImaskCodeBookCC );
             }
+			return ImaskCodeBook;
 }
 
 int background_subtraction::setup(IplImage *rawImage)

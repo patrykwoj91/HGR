@@ -5,7 +5,7 @@ class background_subtraction
 public:
 	background_subtraction(void);
 	~background_subtraction(void);
-	void subtract_background(IplImage *rawImage, int nframes);
+	IplImage* subtract_background(IplImage *rawImage, int nframes);
 	int setup(IplImage *rawImage); // Initial commands for setup processing
 	
 	CvBGCodeBookModel* model;

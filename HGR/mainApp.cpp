@@ -52,7 +52,9 @@ int mainApp::setup()
         return -1;
     }
     cvNamedWindow( "Raw", 1 );
-    cvNamedWindow( "Mask",1);
+    cvNamedWindow( "Final_image",1);
+
+
 	return 0;
 }
 
@@ -61,13 +63,16 @@ void mainApp::update()
 {	
 	if (numerKlatki == 1 && rawImage)
 	{
+		finalImage = cvCreateImage(cvGetSize(rawImage), 8, 1);
 		back_subtractor.setup(rawImage);
 		skin_detector.setup(rawImage);
 	}
 	if(rawImage)
 	{
-		//back_subtractor.subtract_background(rawImage,numerKlatki);
-		skin_detector.detect_skin(rawImage);
+		//background_mask = back_subtractor.subtract_background(skin_detector.getNRGB(rawImage),numerKlatki);
+		skin_mask = skin_detector.mask_skin(rawImage);
+		
+		//cvAnd(skin_mask,background_mask,finalImage);
 	}
 
 }
@@ -75,6 +80,8 @@ void mainApp::update()
 void mainApp::draw() 
 {
 	 cvShowImage( "Raw",rawImage);
-	 cvShowImage( "Mask",skin_detector.maskImage);
+	 cvShowImage( "Skin_mask",skin_mask);
+	// cvShowImage( "Background_mask", background_mask);
+	// cvShowImage( "Final_image", finalImage);
 }
 //--------------------------------------------------------------

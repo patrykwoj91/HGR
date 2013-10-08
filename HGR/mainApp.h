@@ -1,6 +1,5 @@
 #include "stdafx.h"
 #include "skin_detection.h"
-#include "skin_detection2.h"
 #include "background_subtraction.h"
 
 using namespace cv;
@@ -10,6 +9,9 @@ class mainApp
 {  
 private: 
 	CvCapture* capture;
+	IplImage* finalImage;
+	IplImage* skin_mask;
+	IplImage* background_mask;
 	
 private:
 	mainApp() {}

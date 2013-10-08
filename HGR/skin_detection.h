@@ -2,6 +2,7 @@
 
 #include "stdafx.h"
 
+
 using namespace cv;
 
 class skin_detection
@@ -42,15 +43,16 @@ private:
 	int width; 
 	int step; 
 	int channels;
-
+	
 public:
-	void detect_skin(IplImage *rawImage);
+	IplImage * mask_skin(IplImage *rawImage);
 	void setup(IplImage * rawImage);
-	void detection(IplImage *obrazHSV, double progLambda, unsigned int progKanaluV, float *wektorMs, float *macierzKowariancji);
+	void detection(IplImage *obrazHSV, double progLambda, unsigned int progKanaluV);
 	skin_detection();
 	~skin_detection(void);
+	IplImage* getNRGB(IplImage* rawImage);
 private:
 	void get_mask(IplImage *rawImage);
-	IplImage* getNRGB(IplImage* rawImage);
+	
 };
 
