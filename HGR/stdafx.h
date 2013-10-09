@@ -16,7 +16,7 @@
 #include "cv.h"
 #include <opencv2/highgui/highgui.hpp>
 #include <opencv2/imgproc/imgproc.hpp>
-#include <opencv2/opencv.hpp>
+#include <opencv2/video/background_segm.hpp>
 #include "cvaux.h"
 #include "cxmisc.h"
 #include "utils.h"

@@ -54,7 +54,7 @@ int mainApp::setup()
     cvNamedWindow( "Raw", 1 );
     cvNamedWindow( "Final_image",1);
 
-
+	
 	return 0;
 }
 
@@ -63,16 +63,31 @@ void mainApp::update()
 {	
 	if (numerKlatki == 1 && rawImage)
 	{
-		finalImage = cvCreateImage(cvGetSize(rawImage), 8, 1);
+		finalImage = cvCreateImage(cvGetSize(rawImage), 8, 3);
+		final_mask = cvCreateImage(cvGetSize(rawImage), 8, 1);
 		back_subtractor.setup(rawImage);
 		skin_detector.setup(rawImage);
+		createTrackbar( "Cr_min", "Raw", &skin_detector.alpha_slider, skin_detector.alpha_slider_max, NULL );
+		createTrackbar( "Cr_max", "Raw", &skin_detector.beta_slider, skin_detector.alpha_slider_max, NULL );
+		createTrackbar( "Cb_min", "Raw", &skin_detector.alpha_slider_2, skin_detector.alpha_slider_max, NULL );
+		createTrackbar( "Cb_max", "Raw", &skin_detector.beta_slider_2, skin_detector.alpha_slider_max, NULL );
 	}
 	if(rawImage)
 	{
-		//background_mask = back_subtractor.subtract_background(skin_detector.getNRGB(rawImage),numerKlatki);
+		background_mask = back_subtractor.subtract_background(rawImage,numerKlatki);
+		cvErode(background_mask,background_mask,NULL,5);
+		cvDilate(background_mask,background_mask,NULL,5);
+
 		skin_mask = skin_detector.mask_skin(rawImage);
-		
-		//cvAnd(skin_mask,background_mask,finalImage);
+		cvErode(skin_mask,skin_mask,NULL,5);
+		cvDilate(skin_mask,skin_mask,NULL,5);
+
+		cvAnd(skin_mask,background_mask,final_mask);
+		cvErode(final_mask,final_mask,NULL,5);
+		cvDilate(final_mask,final_mask,NULL,5);
+
+		cvZero(finalImage);
+		cvCopy(rawImage,finalImage,final_mask);
 	}
 
 }
@@ -81,7 +96,8 @@ void mainApp::draw()
 {
 	 cvShowImage( "Raw",rawImage);
 	 cvShowImage( "Skin_mask",skin_mask);
-	// cvShowImage( "Background_mask", background_mask);
-	// cvShowImage( "Final_image", finalImage);
+	 cvShowImage( "Background_mask", background_mask);
+	 cvShowImage( "Final_image", finalImage);
 }
 //--------------------------------------------------------------
+

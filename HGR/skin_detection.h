@@ -44,6 +44,7 @@ private:
 	int step; 
 	int channels;
 	
+	
 public:
 	IplImage * mask_skin(IplImage *rawImage);
 	void setup(IplImage * rawImage);
@@ -51,6 +52,14 @@ public:
 	skin_detection();
 	~skin_detection(void);
 	IplImage* getNRGB(IplImage* rawImage);
+	void on_trackbar( int, void* );
+
+static const int alpha_slider_max = 255;
+	int alpha_slider;
+	int beta_slider;
+	int alpha_slider_2;
+	int beta_slider_2;
+
 private:
 	void get_mask(IplImage *rawImage);
 	

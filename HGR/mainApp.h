@@ -12,6 +12,7 @@ private:
 	IplImage* finalImage;
 	IplImage* skin_mask;
 	IplImage* background_mask;
+	IplImage* final_mask;
 	
 private:
 	mainApp() {}
@@ -21,6 +22,8 @@ private:
 	int setup(); // Initial commands for setup processing
 	void update(); // Commands to modify the parameters
 	void draw(); // Drawing functions:
+	void on_trackbar( int, void* );
+
 
 public:
 	IplImage *rawImage;

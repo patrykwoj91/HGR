@@ -79,11 +79,11 @@ IplImage* skin_detection::getNRGB(IplImage* rawImage)
 
 void skin_detection::get_mask(IplImage *rawImage)
 {
-	cvCvtColor(rawImage,hsvImage,COLOR_BGR2HSV); //konwersja do HSV
-	nrgbImage = getNRGB(rawImage); //Normalize RGB 
+	cvCvtColor(rawImage,hsvImage,COLOR_RGB2HSV); //konwersja do HSV
+	//nrgbImage = getNRGB(rawImage); //Normalize RGB 
 
-	cvInRangeS (hsvImage, hsv_min, hsv_max, hsvMask); 
-	cvInRangeS (nrgbImage, nrgb_min, nrgb_max, nrgbMask); 
+	//cvInRangeS (hsvImage, hsv_min, hsv_max, hsvMask); 
+	//cvInRangeS (nrgbImage, nrgb_min, nrgb_max, nrgbMask); 
 
 
 	//combine the masks should be here
@@ -130,7 +130,32 @@ void skin_detection::detection(IplImage *obrazHSV, double progLambda, unsigned i
 
 IplImage* skin_detection::mask_skin(IplImage *rawImage)
 {
-	get_mask(rawImage);
+	//get_mask(rawImage);
 	//detection(hsvImage, 2, 40);
+
+IplImage *YCrCb = cvCreateImage(cvSize(640,480),IPL_DEPTH_8U,3);
+
+int x = 0 , y = 0;
+int Cr = 0, Cb = 0,w=0,h=0;
+
+cvCvtColor(rawImage,YCrCb,CV_BGR2YCrCb);
+w = YCrCb->width, h = YCrCb->height;
+for (y = 0; y < h ; y++)
+for (x = 0; x < w ; x++)
+{
+
+Cr= (int)((unsigned char*)(YCrCb->imageData + YCrCb->widthStep*(y)))[(x)*3+1];
+Cb =(int)((unsigned char*)(YCrCb->imageData + YCrCb->widthStep*(y)))[(x)*3+2];
+
+if ( (Cr>alpha_slider && Cr<beta_slider ) && (Cb>alpha_slider_2 && Cb<beta_slider_2))
+((unsigned char*)(maskImage->imageData + maskImage->widthStep*(y)))[(x)] = 255;
+else
+((unsigned char*)(maskImage->imageData + maskImage->widthStep*(y)))[(x)] = 0;
+}
+
+
+cvWaitKey(10);
+
 	return maskImage;
 }
+

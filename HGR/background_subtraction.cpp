@@ -8,7 +8,7 @@ model = 0;
 class1=1;
 filename1[1000];
 cc=0;
-nframesToLearnBG = 100;
+nframesToLearnBG = 90;
 
 for (int i = 0 ; i<NCHANNELS ; i++)
 	ch[i] = true;
@@ -20,16 +20,19 @@ model->modMin[1] = model->modMin[2] = 3;
 model->modMax[0] = 10;
 model->modMax[1] = model->modMax[2] = 10;
 model->cbBounds[0] = model->cbBounds[1] = model->cbBounds[2] = 10;
+
+
 }
 
 background_subtraction::~background_subtraction(void)
 {
 }
 
+
 IplImage* background_subtraction::subtract_background(IplImage *rawImage, int nframes)
 {
-	cvCvtColor( rawImage, yuvImage, CV_BGR2YCrCb );//YUV For codebook method
-            
+	cvCvtColor( rawImage, yuvImage, CV_RGB2YCrCb );//YUV For codebook method
+
 	//This is where we build our background model
             if( nframes-1 < nframesToLearnBG  )
                 cvBGCodeBookUpdate( model, yuvImage );
@@ -42,10 +45,6 @@ IplImage* background_subtraction::subtract_background(IplImage *rawImage, int nf
             {
                 // Find foreground by codebook method
                 cvBGCodeBookDiff( model, yuvImage, ImaskCodeBook );
-
-                // This part just to visualize bounding boxes and centers if desired
-               // cvCopy(ImaskCodeBook,ImaskCodeBookCC);
-               // cvSegmentFGMask( ImaskCodeBookCC );
             }
 			return ImaskCodeBook;
 }
