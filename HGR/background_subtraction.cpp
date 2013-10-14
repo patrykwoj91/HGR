@@ -8,7 +8,7 @@ model = 0;
 class1=1;
 filename1[1000];
 cc=0;
-nframesToLearnBG = 90;
+nframesToLearnBG = 10;
 
 for (int i = 0 ; i<NCHANNELS ; i++)
 	ch[i] = true;
