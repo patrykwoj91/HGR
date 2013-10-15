@@ -179,7 +179,7 @@ IplImage* skin_detection::mask_skin(IplImage *rawImage)
 {
 	IplImage* temp = cvCreateImage(cvGetSize(rawImage),8,1);
 
-	probMask(rawImage);
+	//probMask(rawImage);
 	covMask(rawImage, (int)threshLambda, (int)threshValue);
 	CrCbMask(rawImage);
 	//cvAnd(probMaskI,CrCbMaskI,mainMask); maska probablistyczna chwilowo wy³¹czona

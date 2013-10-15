@@ -7,6 +7,8 @@ void mainApp::run() {
 
 	rawImage = 0; 
 	capture = cvCaptureFromCAM( 0 );
+	cvSetCaptureProperty(capture,CV_CAP_PROP_FRAME_WIDTH,640);
+	cvSetCaptureProperty(capture,CV_CAP_PROP_FRAME_HEIGHT,480);
 	
 	if( !capture )
     {
@@ -22,7 +24,7 @@ void mainApp::run() {
 
 	while(1) { //main loop
 		rawImage = cvQueryFrame( capture );
-		rawImage = cvLoadImage("rgb2.jpg", CV_LOAD_IMAGE_COLOR);
+		//rawImage = cvLoadImage("rgb2.jpg", CV_LOAD_IMAGE_COLOR);
         ++numerKlatki;
             
 		if(!rawImage)
@@ -91,16 +93,16 @@ void mainApp::update()
 //--------------------------------------------------------------
 void mainApp::draw() 
 {
-	// cvShowImage( "Raw",rawImage);
+	 cvShowImage( "Raw",rawImage);
 	 cvShowImage( "Skin_mask",skin_mask);
 
 
 	 cvShowImage( "CrCb_mask",skin_detector.CrCbMaskI);
 	 cvShowImage( "cov_mask",skin_detector.covMaskI);
-	  cvShowImage( "Prob_mask",skin_detector.probMaskI);
+	 //cvShowImage( "Prob_mask",skin_detector.probMaskI);
 
-	// cvShowImage( "Background_mask", background_mask);
-	// cvShowImage( "Final_image", finalImage);
+	 cvShowImage( "Background_mask", background_mask);
+	 cvShowImage( "Final_image", finalImage);
 }
 //--------------------------------------------------------------
 
