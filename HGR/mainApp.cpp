@@ -75,9 +75,9 @@ void mainApp::update()
 		cvErode(background_mask,background_mask,NULL,5);
 		cvDilate(background_mask,background_mask,NULL,5);
 
-		 cvCopyImage(skin_detector.mask_skin(rawImage),skin_mask);
-		//cvErode(skin_mask,skin_mask,NULL,5);
-		//cvDilate(skin_mask,skin_mask,NULL,5);
+		skin_mask = skin_detector.mask_skin(rawImage);
+		cvErode(skin_mask,skin_mask,NULL,5);
+		cvDilate(skin_mask,skin_mask,NULL,5);
 
 		cvAnd(skin_mask,background_mask,final_mask);
 		cvErode(final_mask,final_mask,NULL,5);

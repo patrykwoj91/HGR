@@ -49,8 +49,7 @@ void skin_detection::setup(IplImage * rawImage)
 	nrgbImage = cvCreateImage(cvGetSize(rawImage),8,3);
 	hsvMask = cvCreateImage(cvGetSize(rawImage),8,1);
 	nrgbMask = cvCreateImage(cvGetSize(rawImage),8,1);
-	maskImage = cvCreateImage(cvGetSize(rawImage), 8, 1);
-	cvZero(maskImage);
+	mainMask = cvCreateImage(cvGetSize(rawImage),8,1);
 
 	covMaskI = cvCreateImage(cvGetSize(rawImage), 8, 1);
 	CrCbMaskI = cvCreateImage(cvGetSize(rawImage), 8, 1);
@@ -109,7 +108,7 @@ void skin_detection::probMask(IplImage *rawImage)
 void skin_detection::covMask(IplImage *rawImage, double threshL, unsigned int threshV) {
 
 	if (this->covMaskI) {
-		cvReleaseImage(&maskImage);
+		cvReleaseImage(&covMaskI);
 	}
 
 	IplImage* obrazHSV = cvCreateImage(cvSize(rawImage->width, rawImage->height), 8, 3);
@@ -178,13 +177,14 @@ cvWaitKey(10);
 
 IplImage* skin_detection::mask_skin(IplImage *rawImage)
 {
+	IplImage* temp = cvCreateImage(cvGetSize(rawImage),8,1);
+
 	probMask(rawImage);
 	covMask(rawImage, (int)threshLambda, (int)threshValue);
 	CrCbMask(rawImage);
+	//cvAnd(probMaskI,CrCbMaskI,mainMask); maska probablistyczna chwilowo wy³¹czona
+	cvAnd(CrCbMaskI,covMaskI,temp);
 
-	//maskImage = covMaskI;
-	//cvAnd(probMaskI,CrCbMaskI,maskImage);
-	cvAnd(CrCbMaskI,covMaskI,maskImage);
-	return maskImage;
+	return temp;
 }
 

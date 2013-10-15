@@ -8,7 +8,7 @@ using namespace cv;
 class skin_detection
 {
 public: 
-	IplImage *maskImage; 
+ 
 	static const int alpha_slider_max = 255;
 	int alpha_slider;
 	int beta_slider;
@@ -17,9 +17,15 @@ public:
 	int threshLambda;
 	int threshValue;
 
+	IplImage *mainMask;
 	IplImage* covMaskI;
 	IplImage* CrCbMaskI;
 	IplImage* probMaskI;
+	IplImage *hsvImage;
+	IplImage *nrgbImage;
+	IplImage* hsvMask;
+	IplImage* nrgbMask;
+
 private:
 	vector<Mat> HSV_split;   //skladowe H S V
 	Mat frame; // kopia bie¿acej klatki
@@ -29,13 +35,6 @@ private:
 	CvScalar hsv_max;
 	CvScalar nrgb_min;
 	CvScalar nrgb_max;
-
-	IplImage *hsvImage;
-	IplImage *nrgbImage;
-	IplImage* hsvMask;
-	IplImage* nrgbMask;
-
-
 
 	float macierz[4];
 	float ms[2];
@@ -60,8 +59,6 @@ public:
 	void setup(IplImage * rawImage);
 	IplImage * mask_skin(IplImage *rawImage);
 	IplImage* getNRGB(IplImage* rawImage);
-
-	
 
 	skin_detection();
 	~skin_detection(void);
