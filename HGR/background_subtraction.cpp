@@ -1,6 +1,6 @@
 #include "StdAfx.h"
 #include "background_subtraction.h"
-
+#include<opencv2/opencv.hpp>
 
 background_subtraction::background_subtraction(void)
 {
@@ -8,12 +8,13 @@ model = 0;
 class1=1;
 filename1[1000];
 cc=0;
-nframesToLearnBG = 10;
+nframesToLearnBG = 90;
 
 for (int i = 0 ; i<NCHANNELS ; i++)
 	ch[i] = true;
 
 model = cvCreateBGCodeBookModel();
+
 //Set color thresholds to default values
 model->modMin[0] = 3;
 model->modMin[1] = model->modMin[2] = 3;
@@ -55,6 +56,7 @@ int background_subtraction::setup(IplImage *rawImage)
     yuvImage = cvCloneImage(rawImage);
     ImaskCodeBook = cvCreateImage( cvGetSize(rawImage), IPL_DEPTH_8U, 1 );
     ImaskCodeBookCC = cvCreateImage( cvGetSize(rawImage), IPL_DEPTH_8U, 1 );
+
     cvSet(ImaskCodeBook,cvScalar(255));
 	return 1;
 }

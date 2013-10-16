@@ -140,6 +140,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="background_subtraction.h" />
+    <ClInclude Include="hand_detection.h" />
     <ClInclude Include="skin_detection.h" />
     <ClInclude Include="mainApp.h" />
     <ClInclude Include="stdafx.h" />
@@ -147,6 +148,7 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="background_subtraction.cpp" />
+    <ClCompile Include="hand_detection.cpp" />
     <ClCompile Include="skin_detection.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="mainApp.cpp" />

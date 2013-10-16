@@ -74,19 +74,20 @@ void mainApp::update()
 	if(rawImage)
 	{
 		background_mask = back_subtractor.subtract_background(rawImage,numerKlatki);
-		cvErode(background_mask,background_mask,NULL,5);
-		cvDilate(background_mask,background_mask,NULL,5);
+		//cvErode(background_mask,background_mask,NULL,5);
+		//cvDilate(background_mask,background_mask,NULL,5);
 
 		skin_mask = skin_detector.mask_skin(rawImage);
-		cvErode(skin_mask,skin_mask,NULL,5);
-		cvDilate(skin_mask,skin_mask,NULL,5);
+		//cvErode(skin_mask,skin_mask,NULL,5);
+		//cvDilate(skin_mask,skin_mask,NULL,5);
 
 		cvAnd(skin_mask,background_mask,final_mask);
-		cvErode(final_mask,final_mask,NULL,5);
-		cvDilate(final_mask,final_mask,NULL,5);
+
+		//cvErode(final_mask,final_mask,NULL,5);
+		//cvDilate(final_mask,final_mask,NULL,5);
 
 		cvZero(finalImage);
-		cvCopy(rawImage,finalImage,final_mask);
+		cvCopy(rawImage,finalImage,background_mask);
 	}
 
 }
@@ -97,9 +98,9 @@ void mainApp::draw()
 	 cvShowImage( "Skin_mask",skin_mask);
 
 
-	 cvShowImage( "CrCb_mask",skin_detector.CrCbMaskI);
-	 cvShowImage( "cov_mask",skin_detector.covMaskI);
-	 //cvShowImage( "Prob_mask",skin_detector.probMaskI);
+	// cvShowImage( "CrCb_mask",skin_detector.CrCbMaskI);
+	// cvShowImage( "cov_mask",skin_detector.covMaskI);
+	 cvShowImage( "Prob_mask",final_mask);
 
 	 cvShowImage( "Background_mask", background_mask);
 	 cvShowImage( "Final_image", finalImage);

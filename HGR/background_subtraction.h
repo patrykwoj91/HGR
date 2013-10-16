@@ -9,7 +9,6 @@ public:
 	int setup(IplImage *rawImage); // Initial commands for setup processing
 	IplImage* simple_substract(IplImage *rawImage);
 
-
 	CvBGCodeBookModel* model;
 	static const int NCHANNELS = 3;
 	bool ch[NCHANNELS]; // This sets what channels should be adjusted for background bounds
