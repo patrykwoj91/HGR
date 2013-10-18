@@ -18,13 +18,9 @@ public:
 	int threshValue;
 
 	IplImage *mainMask;
-	IplImage* covMaskI;
-	IplImage* CrCbMaskI;
-	IplImage* probMaskI;
+	IplImage *covMask;
+	IplImage *CrCbMask;
 	IplImage *hsvImage;
-	IplImage *nrgbImage;
-	IplImage* hsvMask;
-	IplImage* nrgbMask;
 
 private:
 	vector<Mat> HSV_split;   //skladowe H S V
@@ -65,7 +61,7 @@ public:
 
 private:
 	void probMask(IplImage *rawImage);
-	void covMask(IplImage *obrazHSV,  double threshLambda, unsigned int threshV); //wykrywanie na podstawie macierzy kowariacji wartosci srednich i odleglosci ma...
-	void CrCbMask(IplImage * rawImage);
+	void covariationMask(IplImage *obrazHSV,  double threshLambda, unsigned int threshV); //wykrywanie na podstawie macierzy kowariacji wartosci srednich i odleglosci ma...
+	void CrCbthreshholdMask(IplImage * rawImage);
 };
 

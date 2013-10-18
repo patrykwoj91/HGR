@@ -1,6 +1,7 @@
 #include "stdafx.h"
 #include "skin_detection.h"
 #include "background_subtraction.h"
+#include "hand_detection.h"
 
 using namespace cv;
 
@@ -9,7 +10,6 @@ class mainApp
 {  
 private: 
 	CvCapture* capture;
-	IplImage* finalImage;
 	IplImage* skin_mask;
 	IplImage* background_mask;
 	IplImage* final_mask;
@@ -30,6 +30,7 @@ public:
 	int numerKlatki;
 	background_subtraction back_subtractor;
 	skin_detection skin_detector;
+	hand_detection hand_detector;
 
 public:
 	static mainApp& getInstance()

@@ -46,14 +46,11 @@ skin_detection::~skin_detection(void)
 void skin_detection::setup(IplImage * rawImage)
 {
 	hsvImage = cvCreateImage(cvGetSize(rawImage),8,3);
-	nrgbImage = cvCreateImage(cvGetSize(rawImage),8,3);
-	hsvMask = cvCreateImage(cvGetSize(rawImage),8,1);
-	nrgbMask = cvCreateImage(cvGetSize(rawImage),8,1);
 	mainMask = cvCreateImage(cvGetSize(rawImage),8,1);
 
-	covMaskI = cvCreateImage(cvGetSize(rawImage), 8, 1);
-	CrCbMaskI = cvCreateImage(cvGetSize(rawImage), 8, 1);
-	probMaskI = cvCreateImage(cvGetSize(rawImage), 8, 1);
+
+	CrCbMask = cvCreateImage(cvGetSize(rawImage), 8, 1);
+
 
 	height = hsvImage->height;
 	width = hsvImage->width;
@@ -75,50 +72,35 @@ IplImage* skin_detection::getNRGB(IplImage* rawImage)
 	IplImage* imgavg = cvCreateImage(cvGetSize(rawImage), 8, 3);
 
 	for(int x=0; x < rawImage->width ;x++)
-    {
+	{
 		for(int y=0;y < rawImage->height ;y++)
-        {
+		{
 			int redValue = (int)((unsigned char*)(rgbImage->imageData + rgbImage->widthStep*(y)))[(x)*3+0]; 
-            int greenValue = (int)((unsigned char*)(rgbImage->imageData + rgbImage->widthStep*(y)))[(x)*3+1];
-            int blueValue = (int)((unsigned char*)(rgbImage->imageData + rgbImage->widthStep*(y)))[(x)*3+2];
-		
+			int greenValue = (int)((unsigned char*)(rgbImage->imageData + rgbImage->widthStep*(y)))[(x)*3+1];
+			int blueValue = (int)((unsigned char*)(rgbImage->imageData + rgbImage->widthStep*(y)))[(x)*3+2];
+
 			double sum = redValue+greenValue+blueValue;
 
 			((unsigned char*)(imgavg->imageData + imgavg->widthStep*(y)))[(x)*3+0] = redValue/sum*255;
 			((unsigned char*)(imgavg->imageData + imgavg->widthStep*(y)))[(x)*3+1] = greenValue/sum*255;
 			((unsigned char*)(imgavg->imageData + imgavg->widthStep*(y)))[(x)*3+2] = blueValue/sum*255;
-        }
-    }
-    return imgavg;
+		}
+	}
+	return imgavg;
 }
 
-void skin_detection::probMask(IplImage *rawImage)
-{
-	cvCvtColor(rawImage,hsvImage,COLOR_BGR2HSV); //convert to HSV
-	nrgbImage = getNRGB(rawImage); //Normalize RGB 
+void skin_detection::covariationMask(IplImage *rawImage, double threshL, unsigned int threshV) {
 
-	cvInRangeS (hsvImage, Scalar(0,0.2*255.0,0.35*255.0), Scalar(50.0/2.0,0.68*255.0,1.0*255.0), hsvMask); //apply range masking
-	cvInRangeS (nrgbImage, cvScalar(0*255.0,0.28*255.0,0.36*255.0), cvScalar(1.0*255.0,0.363*255.0,0.465*255.0), nrgbMask); 
-
-	//combine the masks should be here
-	cvAnd(hsvMask,nrgbMask,probMaskI);
-	
-}
-
-void skin_detection::covMask(IplImage *rawImage, double threshL, unsigned int threshV) {
-
-	if (this->covMaskI) {
-		cvReleaseImage(&covMaskI);
+	if (this->covMask) {
+		cvReleaseImage(&covMask);
 	}
 
-	IplImage* obrazHSV = cvCreateImage(cvSize(rawImage->width, rawImage->height), 8, 3);
-	cvCvtColor(rawImage,obrazHSV,COLOR_RGB2HSV); //convert to HSV
+	cvCvtColor(rawImage,hsvImage,COLOR_RGB2HSV); //convert to HSV
 
-	covMaskI = cvCreateImage(cvSize(obrazHSV->width, obrazHSV->height), 8, 1);
-
-	uchar* data = (uchar *)obrazHSV->imageData; //odwolanie do wartosci pixela
-	int stepMask = covMaskI->widthStep; 
-	uchar* dataMask = (uchar *)covMaskI->imageData; //odwolanie do wartosci pixela maski
+	covMask = cvCreateImage(cvGetSize(rawImage), 8, 1);
+	uchar* data = (uchar *)hsvImage->imageData; //odwolanie do wartosci pixela
+	int stepMask = covMask->widthStep; 
+	uchar* dataMask = (uchar *)covMask->imageData; //odwolanie do wartosci pixela maski
 
 	double temp[2];
 
@@ -144,47 +126,43 @@ void skin_detection::covMask(IplImage *rawImage, double threshL, unsigned int th
 
 			dataMask[i*stepMask+j] = ((data[i*step+j*channels+2] >= threshV) && (lambda < threshL)) ? 255 : 0;
 
-	}
+		}
 }
 
-void skin_detection::CrCbMask(IplImage *rawImage)
-{
-	
-IplImage *YCrCb = cvCreateImage(cvGetSize(rawImage),IPL_DEPTH_8U,3);
-
-int x = 0 , y = 0;
-int Cr = 0, Cb = 0,w=0,h=0;
-
-cvCvtColor(rawImage,YCrCb,CV_BGR2YCrCb);
-w = YCrCb->width, h = YCrCb->height;
-
-for (y = 0; y < h ; y++)
-for (x = 0; x < w ; x++)
+void skin_detection::CrCbthreshholdMask(IplImage *rawImage)
 {
 
-Cr= (int)((unsigned char*)(YCrCb->imageData + YCrCb->widthStep*(y)))[(x)*3+1];
-Cb =(int)((unsigned char*)(YCrCb->imageData + YCrCb->widthStep*(y)))[(x)*3+2];
+	IplImage *YCrCb = cvCreateImage(cvGetSize(rawImage),IPL_DEPTH_8U,3);
 
-if ( (Cr>alpha_slider && Cr<beta_slider ) && (Cb>alpha_slider_2 && Cb<beta_slider_2))
-((unsigned char*)(CrCbMaskI->imageData + CrCbMaskI->widthStep*(y)))[(x)] = 255;
-else
-((unsigned char*)(CrCbMaskI->imageData + CrCbMaskI->widthStep*(y)))[(x)] = 0;
-}
+	int x = 0 , y = 0;
+	int Cr = 0, Cb = 0,w=0,h=0;
+
+	cvCvtColor(rawImage,YCrCb,CV_BGR2YCrCb);
+	w = YCrCb->width, h = YCrCb->height;
+
+	for (y = 0; y < h ; y++)
+		for (x = 0; x < w ; x++)
+		{
+
+			Cr= (int)((unsigned char*)(YCrCb->imageData + YCrCb->widthStep*(y)))[(x)*3+1];
+			Cb =(int)((unsigned char*)(YCrCb->imageData + YCrCb->widthStep*(y)))[(x)*3+2];
+
+			if ( (Cr>alpha_slider && Cr<beta_slider ) && (Cb>alpha_slider_2 && Cb<beta_slider_2))
+				((unsigned char*)(CrCbMask->imageData + CrCbMask->widthStep*(y)))[(x)] = 255;
+			else
+				((unsigned char*)(CrCbMask->imageData + CrCbMask->widthStep*(y)))[(x)] = 0;
+		}
 
 
-cvWaitKey(10);
+		cvWaitKey(10);
 }
 
 IplImage* skin_detection::mask_skin(IplImage *rawImage)
 {
 	IplImage* temp = cvCreateImage(cvGetSize(rawImage),8,1);
-
-	//probMask(rawImage);
-	covMask(rawImage, (int)threshLambda, (int)threshValue);
-	CrCbMask(rawImage);
-	//cvAnd(probMaskI,CrCbMaskI,mainMask); maska probablistyczna chwilowo wy³¹czona
-	cvAnd(CrCbMaskI,covMaskI,temp);
-
+	covariationMask(rawImage, (int)threshLambda, (int)threshValue); //metoda macierzy kowariacji
+	CrCbthreshholdMask(rawImage); // metoda progowania barw z YcrCb
+	cvOr(CrCbMask,covMask,temp);
 	return temp;
 }
 
