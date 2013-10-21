@@ -67,7 +67,7 @@ void mainApp::update()
 		final_mask = cvCreateImage(cvGetSize(rawImage), 8, 1);
 		back_subtractor.setup(rawImage);
 		skin_detector.setup(rawImage);
-		
+		hand_detector.setup(rawImage);
 	}
 	if(rawImage)
 	{
@@ -75,9 +75,12 @@ void mainApp::update()
 		skin_mask = skin_detector.mask_skin(rawImage);
 		cvAnd(skin_mask,background_mask,final_mask);
 
+		
+		 // 162 223
+		 //  51 134
 
-	//	cvErode(final_mask,final_mask,NULL,5);
-	//	cvDilate(final_mask,final_mask,NULL,5);
+		cvErode(final_mask,final_mask,NULL,5);
+		cvDilate(final_mask,final_mask,NULL,5); 
 		hand_detector.detect_hand(final_mask,rawImage);
 	}
 
@@ -86,11 +89,10 @@ void mainApp::update()
 void mainApp::draw() 
 {
 	 cvShowImage( "Raw",rawImage);
-	 cvShowImage( "Skin_mask",final_mask);
 	 cvShowImage( "CrCb_mask",skin_detector.CrCbMask);
 	 cvShowImage( "cov_mask",skin_detector.covMask);
-
 	 cvShowImage( "Background_mask", background_mask);
+	 cvShowImage( "Skin_mask",final_mask);
 }
 //--------------------------------------------------------------
 
