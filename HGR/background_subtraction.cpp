@@ -9,7 +9,7 @@ class1=1;
 filename1[1000];
 cc=0;
 nframesToLearnBG = 90;
-
+calibrated = false;
 for (int i = 0 ; i<NCHANNELS ; i++)
 	ch[i] = true;
 
@@ -46,6 +46,7 @@ IplImage* background_subtraction::subtract_background(IplImage *rawImage, int nf
             {
                 // Find foreground by codebook method
                 cvBGCodeBookDiff( model, yuvImage, ImaskCodeBook );
+				calibrated = true;
             }
 			return ImaskCodeBook;
 }

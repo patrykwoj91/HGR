@@ -4,7 +4,7 @@
 
 hand_detection::hand_detection(void)
 {
-	storage	= cvCreateMemStorage(0);
+
 }
 
 
@@ -21,6 +21,7 @@ void hand_detection::setup(IplImage * rawImage)
 void hand_detection::detect_hand(IplImage* skin_mask, IplImage* rawImage)
 {
 	cvCopy(skin_mask,skin);
+	storage	= cvCreateMemStorage(0);
 	int conNum = cvFindContours(skin, storage, &contours, sizeof(CvContour), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0)); //find contours
 	CvSeq* current_contour = contours;
 
@@ -42,9 +43,8 @@ void hand_detection::detect_hand(IplImage* skin_mask, IplImage* rawImage)
 	cvZero(cont);
 	cvDrawContours(cont, largest_contour, CV_RGB(255,0,0), CV_RGB(255,255,255), 0, 2, 8); // Draw the largest contour using previously stored index.
 	
-
-	cvShowImage("contour", cont);
 	find_defects();
+	cvShowImage("contour", cont);
 }
 
 void hand_detection::find_defects()
@@ -71,5 +71,34 @@ void hand_detection::find_defects()
 		hull = cvConvexHull2( ptseq, 0, CV_CLOCKWISE, 0 );
 		int hullcount = hull->total;
 		defects= cvConvexityDefects(ptseq,hull,storage2 );
+
+		CvConvexityDefect* defectArray;
+		int j=0;
+
+		// This cycle marks all defects of convexity of current contours.
+		for(;defects;defects = defects->h_next)
+		{
+			int nomdef = defects->total; // defect amount
+			if(nomdef == 0)
+				continue;
+			// Alloc memory for defect set.
+			defectArray = (CvConvexityDefect*)malloc(sizeof(CvConvexityDefect)*nomdef);
+			// Get defect set.
+			cvCvtSeqToArray(defects,defectArray, CV_WHOLE_SEQ);
+			// Draw marks for all defects.
+			for(int i=0; i<nomdef ; i++)
+			{ 	
+				cvLine(cont, *(defectArray[i].start), *(defectArray[i].depth_point),CV_RGB(255,255,0),1, CV_AA, 0 );
+				cvCircle( cont, *(defectArray[i].depth_point), 5, CV_RGB(0,0,164), 2, 8,0);
+				cvCircle( cont, *(defectArray[i].start), 5, CV_RGB(0,0,164), 2, 8,0);
+				cvLine(cont, *(defectArray[i].depth_point), *(defectArray[i].end),CV_RGB(255,255,0),1, CV_AA, 0 );
+			}
+			j++;
+			// Free memory.
+			free(defectArray);
+		}
 	}
+	cvReleaseMemStorage( &storage1 );
+	cvReleaseMemStorage( &storage2 );
+	cvReleaseMemStorage( &storage3 );
 }

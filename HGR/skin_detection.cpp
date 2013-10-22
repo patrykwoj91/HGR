@@ -31,10 +31,10 @@ skin_detection::skin_detection()
 	XmsCsInv = cvCreateMat(1, 2, CV_32FC1);
 	XmsCsInvXmsT = cvCreateMat(1, 1, CV_32FC1);
 
-	alpha_slider = 128;
-	beta_slider = 164;
-	alpha_slider_2 = 91;
-	beta_slider_2 = 127;
+	alpha_slider = 132;
+	beta_slider = 170;
+	alpha_slider_2 = 125;
+	beta_slider_2 = 168;
 	threshLambda = 2;
 	threshValue = 40;
 }
@@ -61,7 +61,7 @@ void skin_detection::setup(IplImage * rawImage)
 	createTrackbar( "Cr_max", "CrCb_mask", &beta_slider, alpha_slider_max, NULL );
 	createTrackbar( "Cb_min", "CrCb_mask", &alpha_slider_2, alpha_slider_max, NULL );
 	createTrackbar( "Cb_max", "CrCb_mask", &beta_slider_2, alpha_slider_max, NULL );
-	createTrackbar( "threshV", "cov_mask", &threshValue, 100, NULL );
+	createTrackbar( "threshV", "cov_mask", &threshValue, 200, NULL );
 	createTrackbar( "threshLambda", "cov_mask", &threshLambda, 50, NULL );
 }
 

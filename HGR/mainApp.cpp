@@ -76,12 +76,13 @@ void mainApp::update()
 		cvAnd(skin_mask,background_mask,final_mask);
 
 		
-		 // 162 223
-		 //  51 134
+		 // 132 170
+		 //  125 168
 
 		cvErode(final_mask,final_mask,NULL,5);
 		cvDilate(final_mask,final_mask,NULL,5); 
-		hand_detector.detect_hand(final_mask,rawImage);
+		if (back_subtractor.calibrated)
+			hand_detector.detect_hand(final_mask,rawImage);
 	}
 
 }

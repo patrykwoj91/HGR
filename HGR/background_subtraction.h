@@ -8,6 +8,7 @@ public:
 	IplImage* subtract_background(IplImage *rawImage, int nframes);
 	int setup(IplImage *rawImage); // Initial commands for setup processing
 	IplImage* simple_substract(IplImage *rawImage);
+	bool calibrated;
 
 	CvBGCodeBookModel* model;
 	static const int NCHANNELS = 3;
