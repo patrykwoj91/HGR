@@ -43,22 +43,49 @@ void hand_detection::detect_hand(IplImage* skin_mask, IplImage* rawImage)
 	cvZero(cont);
 	cvDrawContours(cont, largest_contour, CV_RGB(255,0,0), CV_RGB(255,255,255), 0, 2, 8); // Draw the largest contour using previously stored index.
 	
-	find_defects();
+	mark_features();
 	cvShowImage("contour", cont);
 }
 
-void hand_detection::find_defects()
+void hand_detection::mark_features()
 {
+	storage = cvCreateMemStorage(0);
+    defectstorage = cvCreateMemStorage(0);
+    palmstorage = cvCreateMemStorage(0);       
+    fingerstorage = cvCreateMemStorage(0);
 
+	fingerseq = cvCreateSeq(CV_SEQ_ELTYPE_POINT,sizeof(CvSeq),sizeof(CvPoint),fingerstorage);
+    palmsizecount=0;  
+    palmcountfull = false; 
+    palmpositioncount=0;  
+    palmpositionfull = false; 
+
+	CvMemStorage* storage = cvCreateMemStorage(0); 
+    CvMemStorage* defectstorage = cvCreateMemStorage(0); 
+    CvMemStorage* palmstorage = cvCreateMemStorage(0);   
+	palm = cvCreateSeq(CV_SEQ_ELTYPE_POINT,sizeof(CvSeq),sizeof(CvPoint),palmstorage); 
+
+	  if(largest_contour)
+        { 
+               
+                 contourcenter =  cvMinAreaRect2(largest_contour,0); 
+                 armcenter.x = cvRound(contourcenter.center.x); 
+                 armcenter.y = cvRound(contourcenter.center.y); 
+                 getconvexhull();                                                                                               
+        } 
+}
+
+
+
+void  hand_detection::getconvexhull() 
+{ 
+	
 	CvMemStorage* storage1 = cvCreateMemStorage(0);
 	CvMemStorage* storage2 = cvCreateMemStorage(0);
 	CvMemStorage* storage3 = cvCreateMemStorage(0);
 
-	if (largestArea > 5000)
-	{
 		largest_contour = cvApproxPoly( largest_contour, sizeof(CvContour), storage3, CV_POLY_APPROX_DP, 10, 1 );
-		CvPoint pt0;
-		CvSeq* ptseq = cvCreateSeq( CV_SEQ_KIND_GENERIC|CV_32SC2, sizeof(CvContour),sizeof(CvPoint), storage1 );
+		ptseq = cvCreateSeq( CV_SEQ_KIND_GENERIC|CV_32SC2, sizeof(CvContour),sizeof(CvPoint), storage1 );
 
 		for(int i = 0; i < largest_contour->total; i++ )
 		{ 
@@ -69,47 +96,31 @@ void hand_detection::find_defects()
 		}
 
 		hull = cvConvexHull2( ptseq, 0, CV_CLOCKWISE, 0 );
-		int hullcount = hull->total;
+		pt0 = **CV_GET_SEQ_ELEM( CvPoint*, hull, hull->total - 1 ); 
 		defects= cvConvexityDefects(ptseq,hull,storage2 );
-		int defectscount = defects->total;
 
-		
-
-		pt0 = **CV_GET_SEQ_ELEM( CvPoint*, hull, hullcount - 1 );
-
-		for(int i = 0; i < hullcount; i++ ) //convex hulls
-        {
-            CvPoint pt = **CV_GET_SEQ_ELEM( CvPoint*, hull, i );
-            cvLine( cont, pt0, pt, CV_RGB( 0, 255, 0 ), 1, CV_AA, 0 );
-            pt0 = pt;
-        }
-
-		CvConvexityDefect* defectArray;
-		int j=0;
-
-		for(;defects;defects = defects->h_next)
-		{
-			int nomdef = defects->total; // defect amount
-			if(nomdef == 0)
-				continue;
-			// Alloc memory for defect set.
-			defectArray = (CvConvexityDefect*)malloc(sizeof(CvConvexityDefect)*nomdef);
-			// Get defect set.
-			cvCvtSeqToArray(defects,defectArray, CV_WHOLE_SEQ);
-			// Draw marks for all defects.
-			for(int i=0; i<nomdef ; i++)
-			{ 	
-				//cvLine(cont, *(defectArray[i].start), *(defectArray[i].depth_point),CV_RGB(255,255,0),1, CV_AA, 0 );
-				cvCircle( cont, *(defectArray[i].depth_point), 5, CV_RGB(0,0,164), 2, 8,0);
-				cvCircle( cont, *(defectArray[i].start), 5, CV_RGB(0,0,164), 2, 8,0);
-				//cvLine(cont, *(defectArray[i].depth_point), *(defectArray[i].end),CV_RGB(255,255,0),1, CV_AA, 0 );
-			}
-			j++;
-			// Free memory.
-			free(defectArray);
-		}
-	}
-	cvReleaseMemStorage( &storage1 );
-	cvReleaseMemStorage( &storage2 );
-	cvReleaseMemStorage( &storage3 );
-}
+	
+                    for(int i = 0; i < hull->total; i++ ) 
+                    { 
+                            pt = **CV_GET_SEQ_ELEM( CvPoint*, hull, i ); 
+                            cvLine( cont, pt0, pt, CV_RGB( 128, 128, 128 ),2,8,0); 
+                            pt0 = pt; 
+                    } 
+                      
+                    for(int i=0;i<defects->total;i++) 
+                    { 
+                         CvConvexityDefect* d=(CvConvexityDefect*)cvGetSeqElem(defects,i); 
+                         if(d->depth > 10) 
+                         { 
+                            p.x = d->depth_point->x; 
+                            p.y = d->depth_point->y; 
+                            cvCircle(cont,p,5,CV_RGB(255,255,0),-1,CV_AA,0); 
+							p.x = d->end->x; 
+                            p.y = d->end->y; 
+							cvCircle(cont,p,5,CV_RGB(255,255,0),-1,CV_AA,0); 
+							p.x = d->start->x; 
+                            p.y = d->start->y; 
+							cvCircle(cont,p,5,CV_RGB(255,255,0),-1,CV_AA,0); 
+                         } 
+                     }                                           
+} 

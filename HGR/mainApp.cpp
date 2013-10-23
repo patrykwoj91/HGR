@@ -83,8 +83,8 @@ void mainApp::update()
 		 // 132 170
 		 //  125 168
 
-		//cvErode(final_mask,final_mask,NULL,5);
-		//cvDilate(final_mask,final_mask,NULL,5); 
+		cvErode(final_mask,final_mask,NULL,1);
+		cvDilate(final_mask,final_mask,NULL,1); 
 		if (back_subtractor.calibrated)
 			hand_detector.detect_hand(final_mask,rawImage);
 	}
