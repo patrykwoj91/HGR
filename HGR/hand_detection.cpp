@@ -71,11 +71,22 @@ void hand_detection::find_defects()
 		hull = cvConvexHull2( ptseq, 0, CV_CLOCKWISE, 0 );
 		int hullcount = hull->total;
 		defects= cvConvexityDefects(ptseq,hull,storage2 );
+		int defectscount = defects->total;
+
+		
+
+		pt0 = **CV_GET_SEQ_ELEM( CvPoint*, hull, hullcount - 1 );
+
+		for(int i = 0; i < hullcount; i++ ) //convex hulls
+        {
+            CvPoint pt = **CV_GET_SEQ_ELEM( CvPoint*, hull, i );
+            cvLine( cont, pt0, pt, CV_RGB( 0, 255, 0 ), 1, CV_AA, 0 );
+            pt0 = pt;
+        }
 
 		CvConvexityDefect* defectArray;
 		int j=0;
 
-		// This cycle marks all defects of convexity of current contours.
 		for(;defects;defects = defects->h_next)
 		{
 			int nomdef = defects->total; // defect amount
@@ -88,10 +99,10 @@ void hand_detection::find_defects()
 			// Draw marks for all defects.
 			for(int i=0; i<nomdef ; i++)
 			{ 	
-				cvLine(cont, *(defectArray[i].start), *(defectArray[i].depth_point),CV_RGB(255,255,0),1, CV_AA, 0 );
+				//cvLine(cont, *(defectArray[i].start), *(defectArray[i].depth_point),CV_RGB(255,255,0),1, CV_AA, 0 );
 				cvCircle( cont, *(defectArray[i].depth_point), 5, CV_RGB(0,0,164), 2, 8,0);
 				cvCircle( cont, *(defectArray[i].start), 5, CV_RGB(0,0,164), 2, 8,0);
-				cvLine(cont, *(defectArray[i].depth_point), *(defectArray[i].end),CV_RGB(255,255,0),1, CV_AA, 0 );
+				//cvLine(cont, *(defectArray[i].depth_point), *(defectArray[i].end),CV_RGB(255,255,0),1, CV_AA, 0 );
 			}
 			j++;
 			// Free memory.

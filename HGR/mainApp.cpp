@@ -73,14 +73,18 @@ void mainApp::update()
 	{
 		background_mask = back_subtractor.subtract_background(rawImage,numerKlatki);
 		skin_mask = skin_detector.mask_skin(rawImage);
+
+		cvErode(background_mask,background_mask,NULL,5);
+		cvDilate(background_mask,background_mask,NULL,5); 
+
 		cvAnd(skin_mask,background_mask,final_mask);
 
 		
 		 // 132 170
 		 //  125 168
 
-		cvErode(final_mask,final_mask,NULL,5);
-		cvDilate(final_mask,final_mask,NULL,5); 
+		//cvErode(final_mask,final_mask,NULL,5);
+		//cvDilate(final_mask,final_mask,NULL,5); 
 		if (back_subtractor.calibrated)
 			hand_detector.detect_hand(final_mask,rawImage);
 	}
