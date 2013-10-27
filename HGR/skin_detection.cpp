@@ -33,10 +33,10 @@ skin_detection::skin_detection()
 
 	alpha_slider = 132;
 	beta_slider = 170;
-	alpha_slider_2 = 125;
+	alpha_slider_2 = 105;
 	beta_slider_2 = 168;
-	threshLambda = 2;
-	threshValue = 40;
+	threshLambda = 5;
+	threshValue = 12;
 }
 
 skin_detection::~skin_detection(void)

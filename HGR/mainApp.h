@@ -13,11 +13,18 @@ private:
 	IplImage* skin_mask;
 	IplImage* background_mask;
 	IplImage* final_mask;
+	IplImage* final_image;
 	
 private:
 	mainApp() {}
 	mainApp(const mainApp &);
 	mainApp& operator=(const mainApp&);
+
+	CvSeq* contours;
+	CvSeq* result;
+	CvMemStorage* storage;
+	double largestArea;
+	CvSeq* largest_contour;
 
 	int setup(); // Initial commands for setup processing
 	void update(); // Commands to modify the parameters

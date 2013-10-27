@@ -14,26 +14,53 @@ hand_detection::~hand_detection(void)
 
 void hand_detection::setup(IplImage * rawImage)
 {
-	skin = cvCreateImage( cvGetSize(rawImage), IPL_DEPTH_8U, 1 );
+	skin = cvCreateImage( cvGetSize(rawImage), IPL_DEPTH_8U, 3 );
 	cont = cvCreateImage( cvGetSize(rawImage), IPL_DEPTH_8U, 3 );
+	thresh = 100;
+	max_thresh = 255;
+	cvNamedWindow( "Canny",1);
+	createTrackbar( " Canny thresh:", "Canny", &thresh, max_thresh );
 }
 
-void hand_detection::detect_hand(IplImage* skin_mask, IplImage* rawImage)
+void hand_detection::detect_hand(IplImage* skin_image)
 {
-	cvCopy(skin_mask,skin);
+	cvCopy(skin_image,skin);
 	storage	= cvCreateMemStorage(0);
-	int conNum = cvFindContours(skin, storage, &contours, sizeof(CvContour), CV_RETR_LIST, CV_CHAIN_APPROX_SIMPLE, cvPoint(0,0)); //find contours
-	CvSeq* current_contour = contours;
+
+	IplImage * grey_scale = cvCreateImage( cvGetSize(skin_image), IPL_DEPTH_8U, 1 );
+	IplImage * canny_out = cvCreateImage( cvGetSize(skin_image), IPL_DEPTH_8U, 1 );
+	IplImage * conty = cvCreateImage( cvGetSize(skin_image), IPL_DEPTH_8U, 3 );
+	
+	cvCvtColor( skin_image, grey_scale, CV_BGR2GRAY );
+	cvSmooth( grey_scale, grey_scale,CV_MEDIAN,3 );
+
+	cvCanny( grey_scale, canny_out, thresh, thresh*2, 3 );
+	//cvDilate(canny_out,canny_out);
+
+	cvShowImage("Canny", canny_out);
+
+	int conNum = cvFindContours(canny_out, storage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_NONE, cvPoint(0,0)); //find contour
+	/// Draw contours
+		for( CvSeq* c=contours; c!=NULL; c=c->h_next )
+		{
+		cvDrawContours(skin_image, c, CV_RGB(255,0,0), CV_RGB(255,255,255), 100);
+		}
+
+	//zamaskowac obraz konturem, a potem dopiero dac canny tutaj odszumic przez treshhold minimalnej wielkosci konturu ;]
+	
+	/*CvSeq* current_contour = contours;
 
 	largestArea = 0;
 	largest_contour = NULL;
 
 	while (current_contour != NULL)
 	{
-	 double area = fabs(cvContourArea(current_contour,CV_WHOLE_SEQ, 0));    
-		if(area > largestArea)
+		Rect r = cvBoundingRect(current_contour,0);
+	
+
+		if(r.area() > largestArea)
 		{
-        largestArea = area;
+        largestArea = r.area();
         largest_contour = current_contour;
 		
 		}
@@ -42,9 +69,8 @@ void hand_detection::detect_hand(IplImage* skin_mask, IplImage* rawImage)
 
 	cvZero(cont);
 	cvDrawContours(cont, largest_contour, CV_RGB(255,0,0), CV_RGB(255,255,255), 0, 2, 8); // Draw the largest contour using previously stored index.
-	
-	mark_features();
-	cvShowImage("contour", cont);
+	*/
+	//mark_features();
 }
 
 void hand_detection::mark_features()
@@ -83,6 +109,8 @@ void  hand_detection::getconvexhull()
 	CvMemStorage* storage1 = cvCreateMemStorage(0);
 	CvMemStorage* storage2 = cvCreateMemStorage(0);
 	CvMemStorage* storage3 = cvCreateMemStorage(0);
+	CvMemStorage* storage4 = cvCreateMemStorage(0);
+	//CvMemStorage* storage5 = cvCreateMemStorage(0);
 
 		largest_contour = cvApproxPoly( largest_contour, sizeof(CvContour), storage3, CV_POLY_APPROX_DP, 10, 1 );
 		ptseq = cvCreateSeq( CV_SEQ_KIND_GENERIC|CV_32SC2, sizeof(CvContour),sizeof(CvPoint), storage1 );
@@ -96,17 +124,19 @@ void  hand_detection::getconvexhull()
 		}
 
 		hull = cvConvexHull2( ptseq, 0, CV_CLOCKWISE, 0 );
+		 
+
 		pt0 = **CV_GET_SEQ_ELEM( CvPoint*, hull, hull->total - 1 ); 
 		defects= cvConvexityDefects(ptseq,hull,storage2 );
 
-	
                     for(int i = 0; i < hull->total; i++ ) 
                     { 
                             pt = **CV_GET_SEQ_ELEM( CvPoint*, hull, i ); 
                             cvLine( cont, pt0, pt, CV_RGB( 128, 128, 128 ),2,8,0); 
                             pt0 = pt; 
                     } 
-                      
+
+               
                     for(int i=0;i<defects->total;i++) 
                     { 
                          CvConvexityDefect* d=(CvConvexityDefect*)cvGetSeqElem(defects,i); 
@@ -114,13 +144,13 @@ void  hand_detection::getconvexhull()
                          { 
                             p.x = d->depth_point->x; 
                             p.y = d->depth_point->y; 
-                            cvCircle(cont,p,5,CV_RGB(255,255,0),-1,CV_AA,0); 
+                            cvCircle(cont,p,5,CV_RGB(255,0,255),-1,CV_AA,0); 
 							p.x = d->end->x; 
                             p.y = d->end->y; 
 							cvCircle(cont,p,5,CV_RGB(255,255,0),-1,CV_AA,0); 
 							p.x = d->start->x; 
                             p.y = d->start->y; 
-							cvCircle(cont,p,5,CV_RGB(255,255,0),-1,CV_AA,0); 
+							cvCircle(cont,p,5,CV_RGB(0,255,0),-1,CV_AA,0); 
                          } 
                      }                                           
 } 

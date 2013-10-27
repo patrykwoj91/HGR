@@ -5,9 +5,10 @@ public:
 	CvSeq* contours;
 	CvSeq* result;
 	CvSeq* hull;
+	CvSeq* filtered_hull;
 	CvSeq* defects;
 	//CvMemStorage *storage;
-	Rect bounding_rect;
+	//Rect bounding_rect;
 	IplImage *cont;
 	double largestArea;
 	IplImage *skin;
@@ -41,8 +42,11 @@ public:
     CvMemStorage* fingerstorage; 
 	CvSeq* ptseq;
 
+
+	int thresh;
+	int max_thresh;
 	//////////////////////////////
-	void detect_hand(IplImage* skin_mask, IplImage* rawImage);
+	void detect_hand(IplImage* skin_image);
 	void setup(IplImage * rawImage);
 	void mark_features();
 
