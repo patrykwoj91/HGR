@@ -12,7 +12,7 @@ public:
 	IplImage *cont;
 	double largestArea;
 	IplImage *skin;
-	CvSeq* largest_contour;
+	CvSeq* filtered_contour;
 
 	//////////////////////////////
 
@@ -36,7 +36,8 @@ public:
     int palmpositioncount;  
     bool palmpositionfull; 
     CvSeq* fingerseq;
-	CvMemStorage* storage;
+	CvMemStorage* contstorage;
+	CvMemStorage* filtcontstorage;
     CvMemStorage* defectstorage;
     CvMemStorage* palmstorage;     
     CvMemStorage* fingerstorage; 
@@ -45,6 +46,8 @@ public:
 
 	int thresh;
 	int max_thresh;
+	int cont_max_thresh;
+	int cont_thresh;
 	//////////////////////////////
 	void detect_hand(IplImage* skin_image);
 	void setup(IplImage * rawImage);
