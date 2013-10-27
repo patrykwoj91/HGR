@@ -45,8 +45,6 @@ void hand_detection::detect_hand(IplImage* skin_image)
 
 	cvShowImage("Canny", canny_out);
 
-	//int conNum = cvFindContours(canny_out, contstorage, &contours, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_NONE, cvPoint(0,0)); //find contour
-
 	CvSeq* filtered_contour = cvCreateSeq(CV_SEQ_KIND_GENERIC|CV_32SC2,sizeof(CvContour),sizeof(CvPoint),filtcontstorage);
 	CvContourScanner contours = cvStartFindContours(canny_out,contstorage, sizeof(CvContour), CV_RETR_TREE, CV_CHAIN_APPROX_NONE, cvPoint(0,0));
 	CvSeq* c;
