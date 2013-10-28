@@ -113,7 +113,7 @@ void mainApp::update()
 		cvReleaseImage(&refImg);
 
 		if (back_subtractor.calibrated)
-			hand_detector.detect_hand(final_image);
+			hand_detector.detect_hand(final_image,final_mask);
 	
 	}
 }
